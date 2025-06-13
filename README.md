@@ -1,102 +1,123 @@
-# 🔊 Speech vs Background Classifier
+# 🔊 Speech vs Background Segmentation System
 
-This project classifies audio frames into **speech (foreground)** or **background (noise)** using extracted audio features and a **Least Squares Classifier**.
+This project implements an audio segmentation system that detects and separates **speech** (foreground) from **background noise** in a mixed audio signal. The system performs frame-wise classification using two models — **Least Squares** and a **3-layer MLP** — followed by post-processing to produce continuous segments. Evaluation is conducted using ground-truth annotations to measure accuracy, precision, recall, and F1-score.
 
 ---
 
 ## 📁 Project Structure
 
 ```
-.
+project/
+│
 ├── data/
 │   ├── train/
-│   │   ├── speech/
-│   │   └── noise/
+│   │   ├── speech/                    # Training speech wav files
+│   │   └── noise/                     # Training noise wav files
+│   ├── test/
+│   │   ├── S01_U04.CH4.wav            # Mixed test audio
+│   │   └── transcriptions/
+│   │       └── S01.json               # Ground truth annotations
+│
 ├── features/
-│   └── test_features.npy
+│   ├── train_features.npy             # Extracted training features
+│   └── test_features.npy              # Extracted test features
+│
 ├── models/
-│   ├── scaler.pkl
-│   └── least_squares_model.pkl
-├── outputs/
-│   └── segments_output_least_squares.csv
-├── training_data.npz
-├── train_least_squares.py
-├── extract_features.py
-├── least_squares_predict.py
+│   ├── least_squares_model.pkl       # Saved Least Squares model
+│   ├── mlp_model.pkl                  # Saved MLP model
+│   └── scaler.pkl                     # Scaler used for feature normalization
+│
+├── output/
+│   ├── segments_output_least_squares.csv  # Segments predicted by Least Squares
+│   └── segments_output_mlp.csv            # Segments predicted by MLP
+│
+├── extract_features.py               # Extracts MFCC, ZCR, RMS, Centroid features
+├── train_least_squares.py           # Trains the Least Squares classifier
+├── train_mlp.py                      # Trains the 3-layer MLP classifier
+├── predict_and_segment.py           # Performs classification and segmentation
+├── evaluate.py                       # Evaluates output segments vs ground truth
 └── README.md
 ```
 
 ---
 
-## 🔧 1. Feature Extraction
+## 🚀 How to Run
 
-```bash
-python extract_features.py
-```
+1. **Extract Features**
 
-Extracts features using `librosa`:
+   ```bash
+   python extract_features.py
+   ```
 
-* 13 MFCCs
-* Zero Crossing Rate
-* RMS Energy
-* Spectral Centroid
+2. **Train Classifiers**
 
-➡️ Saves to `features/test_features.npy`
+   * Least Squares:
 
----
+     ```bash
+     python train_least_squares.py
+     ```
+   * MLP:
 
-## 🧠 2. Train Least Squares Classifier
+     ```bash
+     python train_mlp.py
+     ```
 
-```bash
-python train_least_squares.py
-```
+3. **Segment the Test Audio**
 
-Workflow:
+   ```bash
+   python predict_and_segment.py
+   ```
 
-* Load `training_data.npz`
-* Downsample majority class for balance
-* Standardize features
-* Train least squares weights `w`
-* Evaluate (Accuracy, F1, Confusion Matrix)
+4. **Evaluate Results**
 
-➡️ Saves:
-
-* `models/scaler.pkl`
-* `models/least_squares_model.pkl`
+   ```bash
+   python evaluate.py
+   ```
 
 ---
 
-## 🔍 3. Predict & Extract Segments
+## 📊 Sample Evaluation Metrics
 
-```bash
-python least_squares_predict.py
+### Least Squares Classifier:
+
+* Accuracy : 0.5562
+* Precision: 0.8200
+* Recall   : 0.5567
+* F1-score : 0.6632
+
+### MLP Classifier:
+
+* Accuracy : 0.7813
+* Precision: 0.8554
+* Recall   : 0.8681
+* F1-score : 0.8617
+
+---
+
+## 📄 Output Format
+
+Each classifier produces a CSV file with the following format:
+
 ```
-
-Workflow:
-
-* Load and scale test features
-* Load trained model weights
-* Predict class per frame
-* Merge consecutive frames into segments
-* Save to CSV
-
-➡️ Example output:
-
-```csv
-Audiofile,start,end,class
-S01_U04.CH4.wav,0.00,1.24,background
-S01_U04.CH4.wav,1.24,2.01,foreground
+Audiofile, start, end, class
+S01_U04.CH4.wav, 0.00, 2.21, background
+S01_U04.CH4.wav, 2.21, 5.73, foreground
+S01_U04.CH4.wav, 5.73, 8.00, background
 ...
 ```
 
 ---
 
-## 🛠 Requirements
+## 📚 Datasets Used
 
-* Python 3.8+
-* `numpy`, `librosa`, `scikit-learn`, `joblib`, `matplotlib`, `seaborn`
+* [MUSAN Corpus](https://www.openslr.org/17/)
+* [CHiME Challenge Data](https://www.chimechallenge.org/)
 
-Install dependencies:
+---
+
+## 💻 Dependencies
+
+Install the required Python packages with:
 
 ```bash
 pip install -r requirements.txt
@@ -104,15 +125,7 @@ pip install -r requirements.txt
 
 ---
 
-## 📌 Notes
-
-* Frame hop duration (e.g. 10ms) must remain consistent across stages
-* Least Squares is a simple linear baseline — use an MLP for better results (see `mlp_model.pth` version)
-
----
-
 ## 👤 Author
 
-**George Vellos**
-
+George Vellos
 University of Piraeus
