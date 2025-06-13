@@ -7,72 +7,68 @@ This project implements an audio segmentation system that detects and separates 
 ## 📁 Project Structure
 
 ```
-project/
-│
 ├── data/
 │   ├── train/
-│   │   ├── speech/                    # Training speech wav files
-│   │   └── noise/                     # Training noise wav files
+│   │   ├── speech/
+│   │   └── noise/
 │   ├── test/
-│   │   ├── S01_U04.CH4.wav            # Mixed test audio
-│   │   └── transcriptions/
-│   │       └── S01.json               # Ground truth annotations
-│
-├── features/
-│   ├── train_features.npy             # Extracted training features
-│   └── test_features.npy              # Extracted test features
-│
-├── models/
-│   ├── least_squares_model.pkl       # Saved Least Squares model
-│   ├── mlp_model.pkl                  # Saved MLP model
-│   └── scaler.pkl                     # Scaler used for feature normalization
-│
-├── output/
-│   ├── segments_output_least_squares.csv  # Segments predicted by Least Squares
-│   └── segments_output_mlp.csv            # Segments predicted by MLP
-│
-├── extract_features.py               # Extracts MFCC, ZCR, RMS, Centroid features
-├── train_least_squares.py           # Trains the Least Squares classifier
-├── train_mlp.py                      # Trains the 3-layer MLP classifier
-├── predict_and_segment.py           # Performs classification and segmentation
-├── evaluate.py                       # Evaluates output segments vs ground truth
+│   │   └── S01_U04.CH4.wav
+│   └── transcriptions/
+│       └── S01.json
+├── extract_features.py
+├── extract_WAVfeatures.py
+├── least_squares.py
+├── MLP.py
+├── post_processingLS.py
+├── post_processingMLP.py
+├── evaluate_segments.py
+├── requirements.txt
 └── README.md
 ```
 
----
+## 🚀 Steps to Run
 
-## 🚀 How to Run
+1. **Install dependencies**:
 
-1. **Extract Features**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Extract features** from audio:
 
    ```bash
    python extract_features.py
+   python extract_WAVfeatures.py
    ```
 
-2. **Train Classifiers**
-
-   * Least Squares:
-
-     ```bash
-     python train_least_squares.py
-     ```
-   * MLP:
-
-     ```bash
-     python train_mlp.py
-     ```
-
-3. **Segment the Test Audio**
+3. **Train the models**:
 
    ```bash
-   python predict_and_segment.py
+   python least_squares.py
+   python MLP.py
    ```
 
-4. **Evaluate Results**
+4. **Run post-processing** using trained models:
 
    ```bash
-   python evaluate.py
+   python post_processingLS.py
+   python post_processingMLP.py
    ```
+
+5. **Evaluate segmentation performance**:
+
+   ```bash
+   python evaluate_segments.py
+   ```
+
+## Output
+
+* Segmentation results are saved in `.csv` format with columns:
+
+  ```
+  Audiofile, start, end, class
+  ```
+* Evaluation includes frame-level metrics: **Accuracy**, **Precision**, **Recall**, and **F1-score**.
 
 ---
 
